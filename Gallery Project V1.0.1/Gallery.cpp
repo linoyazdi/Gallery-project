@@ -29,6 +29,8 @@ int getCommandNumberFromUser()
 	return std::atoi(input.c_str());
 }
 
+void printSystemInfo();
+
 int main(void)
 {
 	// initialization data access
@@ -37,17 +39,9 @@ int main(void)
 	// initialize album manager
 	AlbumManager albumManager(dataAccess);
 
-
 	std::string albumName;
 
-	// current date/time based on current system
-	time_t now = time(0);
-	// convert now to string form
-	char* dt = ctime(&now);
-
-	std::cout << "The local date and time is: " << dt;
-	std::cout << "Linoy Yazdi's Gallery Project\n" << std::endl;
-
+	printSystemInfo();
 	std::cout << "Welcome to Gallery!" << std::endl;
 	std::cout << "===================" << std::endl;
 	std::cout << "Type " << HELP << " to a list of all supported commands" << std::endl;
@@ -65,3 +59,18 @@ int main(void)
 }
 
 
+/*
+This function prints the system information on the screen
+input: none
+output: none
+*/
+void printSystemInfo()
+{
+	// current date/time based on current system
+	time_t now = time(0);
+	// convert now to string form
+	std::string date = ctime(&now);
+
+	std::cout << date;
+	std::cout << "Linoy Yazdi's Gallery Project\n" << std::endl;
+}
