@@ -1,4 +1,0 @@
-C:\Users\משתמש\gallery-project\Gallery Project V1.0.1\Debug\Gallery.exe
-C:\Users\משתמש\gallery-project\Gallery Project V1.0.1\Debug\Gallery.pdb
-C:\Users\משתמש\gallery-project\Gallery Project\Debug\Gallery.exe
-C:\Users\משתמש\gallery-project\Gallery Project\Debug\Gallery.pdb
