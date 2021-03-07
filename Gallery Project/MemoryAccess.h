@@ -33,6 +33,8 @@ public:
 	void deleteUser(const User& user) override;
 	bool doesUserExists(int userId) override;
 	User getUser(int userId) override;
+	void deleteUsersAlbums(const User& user) override;
+	void deleteUserTags(const User& user) override;
 
 	// user statistics
 	int countAlbumsOwnedOfUser(const User& user) override;
@@ -54,7 +56,6 @@ private:
 	std::list<User> m_users;
 
 	auto getAlbumIfExists(const std::string& albumName);
-
 	Album createDummyAlbum(const User& user);
 	void cleanUserData(const User& userId);
 };
