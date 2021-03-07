@@ -304,13 +304,24 @@ void AlbumManager::removeUser()
 	if ( !m_dataAccess.doesUserExists(userId) ) {
 		throw MyException("Error: There is no user with id @" + userIdStr + "\n");
 	}
+	
 	const User& user = m_dataAccess.getUser(userId);
 	if (isCurrentAlbumSet() && userId == m_openAlbum.getOwnerId()) {
 		closeAlbum();
 	}
 
-	m_dataAccess.deleteUser(user);
-	std::cout << "User @" << userId << " deleted successfully." << std::endl;
+	try
+	{
+		m_dataAccess.deleteUserTags(user);
+		m_dataAccess.deleteUsersAlbums(user);
+		m_dataAccess.deleteUser(user);
+		std::cout << "User @" << userId << " deleted successfully." << std::endl;
+	}
+	
+	catch (std::exception& e)
+	{
+		std::cout << e.what();
+	}
 }
 
 void AlbumManager::listUsers()

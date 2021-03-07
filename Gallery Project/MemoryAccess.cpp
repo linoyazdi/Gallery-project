@@ -204,6 +204,53 @@ bool MemoryAccess::doesUserExists(int userId)
 	return false;
 }
 
+/*
+This function deletes all the user's albums
+input: the user
+output: none
+*/
+void MemoryAccess::deleteUsersAlbums(const User& user)
+{
+	try
+	{
+		std::list<Album> albumsList = getAlbumsOfUser(user);
+		for (auto album = albumsList.begin(); album != albumsList.end(); ++album) {
+			deleteAlbum(album->getName(), user.getId());
+		}
+	}
+
+	catch (std::exception& e)
+	{
+		throw e;
+	}
+}
+
+/*
+This function removes all the user's tags
+input: the user
+output: none
+*/
+void MemoryAccess::deleteUserTags(const User& user)
+{
+	try
+	{
+		for (const auto& album : m_albums) {
+			const std::list<Picture>& pics = album.getPictures();
+
+			for (const auto& picture : pics) {
+				if (picture.isUserTagged(user)) {
+					untagUserInPicture(album.getName(), picture.getName(), user.getId());
+				}
+			}
+		}
+	}
+
+	catch (std::exception& e)
+	{
+		throw e;
+	}
+}
+
 
 // user statistics
 int MemoryAccess::countAlbumsOwnedOfUser(const User& user) 
@@ -272,7 +319,6 @@ User MemoryAccess::getTopTaggedUser()
 	auto albumsIter = m_albums.begin();
 	for (const auto& album: m_albums) {
 		for (const auto& picture: album.getPictures()) {
-			
 			const std::set<int>& userTags = picture.getUserTags();
 			for (const auto& user: userTags ) {
 				//As map creates default constructed values, 
@@ -299,6 +345,11 @@ User MemoryAccess::getTopTaggedUser()
 
 	if ( -1 == topTaggedUser ) {
 		throw MyException("Failed to find most tagged user");
+	}
+
+	if (!doesUserExists(topTaggedUser))
+	{
+		throw MyException("The most tagged user is no longer exists");
 	}
 
 	return getUser(topTaggedUser);
