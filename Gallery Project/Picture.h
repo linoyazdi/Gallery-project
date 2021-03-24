@@ -8,6 +8,7 @@
 class Picture
 {
 public:
+	Picture() = default;
 	Picture(int id, const std::string& name);
 	Picture(int id, const std::string& name, const std::string& pathOnDisk, const std::string& creationDate);
 

@@ -5,20 +5,21 @@
 #include "IDataAccess.h"
 #include <stdio.h>
 
-class MemoryAccess : public IDataAccess
+class DatabaseAccess : public IDataAccess
 {
 
 public:
-	MemoryAccess();
-	virtual ~MemoryAccess() = default;
+	DatabaseAccess();
+	virtual ~DatabaseAccess() = default;
 
 	// album related
 	const std::list<Album> getAlbums() override;
-	const std::list<Album> getAlbumsOfUser(const User& user) override;
+	std::list<Album> getAlbumsOfUser(const User& user) override;
 	void createAlbum(const Album& album) override;
 	void deleteAlbum(const std::string& albumName, int userId) override;
 	bool doesAlbumExists(const std::string& albumName, int userId) override;
 	Album openAlbum(const std::string& albumName) override;
+	Album getAlbumById(const int albumId) override;
 	void closeAlbum(Album& pAlbum) override;
 	void printAlbums() override;
 
@@ -48,6 +49,12 @@ public:
 	Picture getTopTaggedPicture() override;
 	std::list<Picture> getTaggedPicturesOfUser(const User& user) override;
 
+	// callback functions
+	int usersCallback(void* data, int argc, char** argv, char** azColName) override;
+	int albumsCallback(void* data, int argc, char** argv, char** azColName) override;
+	int picturesCallback(void* data, int argc, char** argv, char** azColName) override;
+	int tagsCallback(void* data, int argc, char** argv, char** azColName) override;
+
 	bool open() override;
 	void close() override;
 	void clear() override;
@@ -61,6 +68,5 @@ private:
 	std::string dbFileName;
 
 	auto getAlbumIfExists(const std::string& albumName);
-	Album createDummyAlbum(const User& user);
 	//void cleanUserData(const User& userId);
 };

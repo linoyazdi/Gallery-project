@@ -6,7 +6,7 @@
 
 
 
-void MemoryAccess::printAlbums()
+void DatabaseAccess::printAlbums()
 {
 	if (m_albums.empty()) {
 		throw MyException("There are no existing albums.");
@@ -18,7 +18,7 @@ void MemoryAccess::printAlbums()
 	}
 }
 
-bool MemoryAccess::open()
+bool DatabaseAccess::open()
 {
 	int doesFileExist = _access(dbFileName.c_str(), 0);
 	int res = sqlite3_open(dbFileName.c_str(), &db);
@@ -51,14 +51,14 @@ bool MemoryAccess::open()
 	return true;
 }
 
-void MemoryAccess::close()
+void DatabaseAccess::close()
 {
 	sqlite3_close(db);
 	db = nullptr;
 }
 
 
-bool MemoryAccess::runSqlCommand(std::string sqlStatement)
+bool DatabaseAccess::runSqlCommand(std::string sqlStatement)
 {
 	char* command = new char[sqlStatement.length() + 1];
 	strcpy(command, sqlStatement.c_str());
@@ -75,14 +75,14 @@ bool MemoryAccess::runSqlCommand(std::string sqlStatement)
 }
 
 
-void MemoryAccess::clear()
+void DatabaseAccess::clear()
 {
 	m_users.clear();
 	m_albums.clear();
 }
 
 
-void MemoryAccess::dropTables()
+void DatabaseAccess::dropTables()
 {
 	sqlite3_exec(db, "DROP TABLE USERS;", nullptr, nullptr, nullptr);
 	sqlite3_exec(db, "DROP TABLE ALBUMS;", nullptr, nullptr, nullptr);
@@ -91,7 +91,7 @@ void MemoryAccess::dropTables()
 }
 
 
-auto MemoryAccess::getAlbumIfExists(const std::string& albumName)
+auto DatabaseAccess::getAlbumIfExists(const std::string& albumName)
 {
 	auto result = std::find_if(std::begin(m_albums), std::end(m_albums), [&](auto& album) { return album.getName() == albumName; });
 
@@ -103,38 +103,19 @@ auto MemoryAccess::getAlbumIfExists(const std::string& albumName)
 }
 
 
-Album MemoryAccess::createDummyAlbum(const User& user)
-{
-	std::stringstream name("Album_" + std::to_string(user.getId()));
-
-	Album album(user.getId(), name.str());
-
-	for (int i = 1; i < 3; ++i) {
-		std::stringstream picName("Picture_" + std::to_string(i));
-
-		Picture pic(i++, picName.str());
-		pic.setPath("C:\\Pictures\\" + picName.str() + ".bmp");
-
-		album.addPicture(pic);
-	}
-
-	return album;
-}
-
-
-MemoryAccess::MemoryAccess()
+DatabaseAccess::DatabaseAccess()
 {
 	this->dbFileName = "MyDB.sqlite";
 }
 
 
-const std::list<Album> MemoryAccess::getAlbums()
+const std::list<Album> DatabaseAccess::getAlbums()
 {
 	return m_albums;
 }
 
 
-const std::list<Album> MemoryAccess::getAlbumsOfUser(const User& user)
+std::list<Album> DatabaseAccess::getAlbumsOfUser(const User& user)
 {
 	std::list<Album> albumsOfUser;
 	for (const auto& album : m_albums) {
@@ -146,13 +127,22 @@ const std::list<Album> MemoryAccess::getAlbumsOfUser(const User& user)
 }
 
 
-void MemoryAccess::createAlbum(const Album& album)
+void DatabaseAccess::createAlbum(const Album& album)
 {
-	m_albums.push_back(album);
+	std::string strCommand = "INSERT INTO ALBUMS VALUES (" + std::to_string(album.getId()) + ", \"" + album.getName() + "\", \"" + album.getCreationDate() + "\", " + std::to_string(album.getOwnerId()) + ");";
+
+	if (runSqlCommand(strCommand))
+	{
+		m_albums.push_back(album);
+	}
+	else
+	{
+		std::cout << "Failed to create album" << std::endl;
+	}
 }
 
 
-void MemoryAccess::deleteAlbum(const std::string& albumName, int userId)
+void DatabaseAccess::deleteAlbum(const std::string& albumName, int userId)
 {
 	for (auto iter = m_albums.begin(); iter != m_albums.end(); iter++) {
 		if (iter->getName() == albumName && iter->getOwnerId() == userId)
@@ -174,7 +164,7 @@ void MemoryAccess::deleteAlbum(const std::string& albumName, int userId)
 }
 
 
-bool MemoryAccess::doesAlbumExists(const std::string& albumName, int userId)
+bool DatabaseAccess::doesAlbumExists(const std::string& albumName, int userId)
 {
 	for (const auto& album : m_albums) {
 		if ((album.getName() == albumName) && (album.getOwnerId() == userId)) {
@@ -186,7 +176,7 @@ bool MemoryAccess::doesAlbumExists(const std::string& albumName, int userId)
 }
 
 
-Album MemoryAccess::openAlbum(const std::string& albumName)
+Album DatabaseAccess::openAlbum(const std::string& albumName)
 {
 	for (auto& album : m_albums) {
 		if (albumName == album.getName()) {
@@ -197,7 +187,7 @@ Album MemoryAccess::openAlbum(const std::string& albumName)
 }
 
 
-void MemoryAccess::addPictureToAlbumByName(const std::string& albumName, const Picture& picture)
+void DatabaseAccess::addPictureToAlbumByName(const std::string& albumName, const Picture& picture)
 {
 	try
 	{
@@ -222,7 +212,7 @@ void MemoryAccess::addPictureToAlbumByName(const std::string& albumName, const P
 }
 
 
-void MemoryAccess::removePictureFromAlbumByName(const std::string& albumName, const std::string& pictureName)
+void DatabaseAccess::removePictureFromAlbumByName(const std::string& albumName, const std::string& pictureName)
 {
 	try
 	{
@@ -247,7 +237,7 @@ void MemoryAccess::removePictureFromAlbumByName(const std::string& albumName, co
 }
 
 
-void MemoryAccess::tagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId)
+void DatabaseAccess::tagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId)
 {
 	try
 	{
@@ -273,7 +263,7 @@ void MemoryAccess::tagUserInPicture(const std::string& albumName, const std::str
 }
 
 
-void MemoryAccess::untagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId)
+void DatabaseAccess::untagUserInPicture(const std::string& albumName, const std::string& pictureName, int userId)
 {
 	try
 	{
@@ -299,7 +289,7 @@ void MemoryAccess::untagUserInPicture(const std::string& albumName, const std::s
 }
 
 
-void MemoryAccess::closeAlbum(Album&)
+void DatabaseAccess::closeAlbum(Album&)
 {
 	// basically here we would like to delete the allocated memory we got from openAlbum
 }
@@ -308,7 +298,7 @@ void MemoryAccess::closeAlbum(Album&)
 // ******************* User ******************* 
 
 
-void MemoryAccess::printUsers()
+void DatabaseAccess::printUsers()
 {
 	std::cout << "Users list:" << std::endl;
 	std::cout << "-----------" << std::endl;
@@ -318,7 +308,7 @@ void MemoryAccess::printUsers()
 }
 
 
-User MemoryAccess::getUser(int userId) {
+User DatabaseAccess::getUser(int userId) {
 	for (const auto& user : m_users) {
 		if (user.getId() == userId) {
 			return user;
@@ -329,7 +319,7 @@ User MemoryAccess::getUser(int userId) {
 }
 
 
-void MemoryAccess::createUser(User& user)
+void DatabaseAccess::createUser(User& user)
 {
 	std::string strCommand = "INSERT INTO USERS VALUES (" + std::to_string(user.getId()) + ", \"" + user.getName() + "\");";
 
@@ -344,7 +334,7 @@ void MemoryAccess::createUser(User& user)
 }
 
 
-void MemoryAccess::deleteUser(const User& user)
+void DatabaseAccess::deleteUser(const User& user)
 {
 	if (doesUserExists(user.getId())) {
 
@@ -369,7 +359,7 @@ void MemoryAccess::deleteUser(const User& user)
 }
 
 
-bool MemoryAccess::doesUserExists(int userId)
+bool DatabaseAccess::doesUserExists(int userId)
 {
 	auto iter = m_users.begin();
 	for (const auto& user : m_users) {
@@ -387,7 +377,7 @@ This function deletes all the user's albums
 input: the user
 output: none
 */
-void MemoryAccess::deleteUsersAlbums(const User& user)
+void DatabaseAccess::deleteUsersAlbums(const User& user)
 {
 	try
 	{
@@ -409,7 +399,7 @@ This function removes all the user's tags
 input: the user
 output: none
 */
-void MemoryAccess::deleteUserTags(const User& user)
+void DatabaseAccess::deleteUserTags(const User& user)
 {
 	try
 	{
@@ -434,7 +424,7 @@ void MemoryAccess::deleteUserTags(const User& user)
 // user statistics
 
 
-int MemoryAccess::countAlbumsOwnedOfUser(const User& user)
+int DatabaseAccess::countAlbumsOwnedOfUser(const User& user)
 {
 	int albumsCount = 0;
 
@@ -448,7 +438,7 @@ int MemoryAccess::countAlbumsOwnedOfUser(const User& user)
 }
 
 
-int MemoryAccess::countAlbumsTaggedOfUser(const User& user)
+int DatabaseAccess::countAlbumsTaggedOfUser(const User& user)
 {
 	int albumsCount = 0;
 
@@ -467,7 +457,7 @@ int MemoryAccess::countAlbumsTaggedOfUser(const User& user)
 }
 
 
-int MemoryAccess::countTagsOfUser(const User& user)
+int DatabaseAccess::countTagsOfUser(const User& user)
 {
 	int tagsCount = 0;
 
@@ -485,7 +475,7 @@ int MemoryAccess::countTagsOfUser(const User& user)
 }
 
 
-float MemoryAccess::averageTagsPerAlbumOfUser(const User& user)
+float DatabaseAccess::averageTagsPerAlbumOfUser(const User& user)
 {
 	int albumsTaggedCount = countAlbumsTaggedOfUser(user);
 
@@ -498,7 +488,7 @@ float MemoryAccess::averageTagsPerAlbumOfUser(const User& user)
 }
 
 
-User MemoryAccess::getTopTaggedUser()
+User DatabaseAccess::getTopTaggedUser()
 {
 	std::map<int, int> userTagsCountMap;
 
@@ -542,7 +532,7 @@ User MemoryAccess::getTopTaggedUser()
 }
 
 
-Picture MemoryAccess::getTopTaggedPicture()
+Picture DatabaseAccess::getTopTaggedPicture()
 {
 	int currentMax = -1;
 	const Picture* mostTaggedPic = nullptr;
@@ -569,7 +559,7 @@ Picture MemoryAccess::getTopTaggedPicture()
 }
 
 
-std::list<Picture> MemoryAccess::getTaggedPicturesOfUser(const User& user)
+std::list<Picture> DatabaseAccess::getTaggedPicturesOfUser(const User& user)
 {
 	std::list<Picture> pictures;
 
@@ -582,4 +572,127 @@ std::list<Picture> MemoryAccess::getTaggedPicturesOfUser(const User& user)
 	}
 
 	return pictures;
+}
+
+
+int DatabaseAccess::usersCallback(void* data, int argc, char** argv, char** azColName)
+{
+	User user;
+
+	for (int i = 0; i < argc; i++) {
+		if (std::string(azColName[i]) == "ID") {
+			user.setId(atoi(argv[i]));
+		}
+		else if (std::string(azColName[i]) == "NAME") {
+			user.setName(argv[i]);
+		}
+	}
+
+	this->m_users.push_back(user);
+	return 0;
+}
+
+
+int DatabaseAccess::albumsCallback(void* data, int argc, char** argv, char** azColName)
+{
+	Album album;
+
+	for (int i = 0; i < argc; i++) {
+		if (std::string(azColName[i]) == "NAME") {
+			album.setName(argv[i]);
+		}
+		else if (std::string(azColName[i]) == "CREATION_DATE") {
+			album.setCreationDate(argv[i]);
+		}
+		else if (std::string(azColName[i]) == "USER_ID") {
+			album.setOwner(atoi(argv[i]));
+		}
+		else if (std::string(azColName[i]) == "ID") {
+			album.setId(atoi(argv[i]));
+		}
+	}
+
+	this->m_albums.push_back(album);
+	return 0;
+}
+
+
+int DatabaseAccess::picturesCallback(void* data, int argc, char** argv, char** azColName)
+{
+	unsigned albumId = 0;
+	Picture pic;
+
+	for (int i = 0; i < argc; i++) {
+		if (std::string(azColName[i]) == "NAME") {
+			pic.setName(argv[i]);
+		}
+		else if (std::string(azColName[i]) == "CREATION_DATE") {
+			pic.setCreationDate(argv[i]);
+		}
+		else if (std::string(azColName[i]) == "ALBUM_ID") {
+			albumId = atoi(argv[i]);
+		}
+		else if (std::string(azColName[i]) == "ID") {
+			pic.setId(atoi(argv[i]));
+		}
+		else if (std::string(azColName[i]) == "LOCATION") {
+			pic.setPath(argv[i]);
+		}
+	}
+
+	try
+	{
+		auto result = getAlbumById(albumId);
+		result.addPicture(pic);
+	}
+
+	catch (std::exception& e)
+	{
+		throw e;
+	}
+
+	return 0;
+}
+
+
+int DatabaseAccess::tagsCallback(void* data, int argc, char** argv, char** azColName)
+{
+	int userId = 0;
+	int picId = 0;
+
+	for (unsigned int i = 0; i < argc; i++) {
+		if (std::string(azColName[i]) == "USER_ID") {
+			userId = atoi(argv[i]);
+		}
+		
+		else if (std::string(azColName[i]) == "PICTURE_ID") {
+			picId = atoi(argv[i]);
+		}
+	}
+
+	// finding the picture in all the albums that the user owns
+	for (auto& currAlbum : getAlbumsOfUser(getUser(userId)))
+	{
+		for (auto& currPic : currAlbum.getPictures())
+		{
+			if (currPic.getId() == picId)
+			{
+				currAlbum.tagUserInPicture(userId, currPic.getName());
+			}
+			break;
+		}
+	}
+
+	return 0;
+}
+
+Album DatabaseAccess::getAlbumById(const int albumId)
+{
+	for (auto& currAlbum : m_albums) {
+		if (currAlbum.getId() == albumId) {
+			return currAlbum;
+		}
+	}
+
+	throw ItemNotFoundException("Album", albumId);
 }
