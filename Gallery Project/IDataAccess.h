@@ -2,6 +2,8 @@
 #include <list>
 #include "Album.h"
 #include "User.h"
+#include "sqlite3.h"
+#include <io.h>
 
 class IDataAccess
 {
@@ -48,4 +50,6 @@ public:
 	virtual bool open() = 0;
 	virtual void close() = 0;
 	virtual void clear() = 0;
+	virtual bool runSqlCommand(std::string sqlStatement) = 0;
+	virtual void dropTables() = 0;
 };
