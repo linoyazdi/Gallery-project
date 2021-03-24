@@ -74,7 +74,7 @@ const std::list<Album> MemoryAccess::getAlbums()
 	return m_albums;
 }
 
-const std::list<Album> MemoryAccess::getAlbumsOfUser(const User& user) 
+std::list<Album> MemoryAccess::getAlbumsOfUser(const User& user) 
 {	
 	std::list<Album> albumsOfUser;
 	for (const auto& album: m_albums) {

@@ -321,7 +321,9 @@ User DatabaseAccess::getUser(int userId) {
 
 void DatabaseAccess::createUser(User& user)
 {
-	std::string strCommand = "INSERT INTO USERS VALUES (" + std::to_string(user.getId()) + ", \"" + user.getName() + "\");";
+	std::string strCommand = "INSERT INTO USERS VALUES (" + std::to_string(user.getId());
+	strCommand.append(", \"");
+	strCommand.append(user.getName() + "\");");
 
 	if (runSqlCommand(strCommand))
 	{
@@ -329,7 +331,7 @@ void DatabaseAccess::createUser(User& user)
 	}
 	else
 	{
-		std::cout << "Failed to remove picture from album by name" << std::endl;
+		std::cout << "Failed to create user" << std::endl;
 	}
 }
 
