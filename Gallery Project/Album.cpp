@@ -37,6 +37,16 @@ void Album::setOwner(int userId)
 	m_ownerId = userId;
 }
 
+int Album::getId() const
+{
+	return this->m_id;
+}
+
+void Album::setId(int id)
+{
+	this->m_id = id;
+}
+
 std::string Album::getCreationDate() const
 {
 	return m_creationDate;

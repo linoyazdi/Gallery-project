@@ -13,7 +13,7 @@ public:
 
 	// album related
 	const std::list<Album> getAlbums() override;
-	const std::list<Album> getAlbumsOfUser(const User& user) override;
+	std::list<Album> getAlbumsOfUser(const User& user) override;
 	void createAlbum(const Album& album) override;
 	void deleteAlbum(const std::string& albumName, int userId) override;
 	bool doesAlbumExists(const std::string& albumName, int userId) override;

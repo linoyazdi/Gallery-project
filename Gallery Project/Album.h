@@ -17,6 +17,9 @@ public:
 	int getOwnerId() const;
 	void setOwner(int userId);
 
+	int getId() const;
+	void setId(int id);
+
 	std::string getCreationDate() const;
 	void setCreationDate(const std::string& creationTime);
 	void setCreationDateNow();
@@ -39,6 +42,7 @@ public:
 
 private:
     int m_ownerId { 0 };
+	int m_id;
 	std::string m_name;
 	std::string m_creationDate;
 	std::list<Picture> m_pictures;
